@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Image to YouTube Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        #options button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #searchResults a {
+            display: block;
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image to YouTube Search</h1>
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="uploadImage()">Upload Image</button>
+    <div id="options"></div>
+    <div id="searchResults"></div>
+
+    <script>
+        function uploadImage() {
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch('/api/analyze', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => displayOptions(data.tags))
+            .catch(error => console.error('Error:', error));
+        }
+
+        function displayOptions(tags) {
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            tags.forEach(tag => {
+                const button = document.createElement('button');
+                button.innerText = tag;
+                button.onclick = () => searchYouTube(tag);
+                optionsDiv.appendChild(button);
+            });
+        }
+
+        function searchYouTube(query) {
+            fetch('/api/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query })
+            })
+            .then(response => response.json())
+            .then(data => displayResults(data.results))
+            .catch(error => console.error('Error:', error));
+        }
+
+        function displayResults(videos) {
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.innerHTML = '';
+            videos.forEach(video => {
+                const videoElement = document.createElement('div');
+                videoElement.innerHTML = `<a href="${video.url}" target="_blank">${video.title}</a>`;
+                resultsDiv.appendChild(videoElement);
+            });
+        }
+    </script>
+</body>
+</html>

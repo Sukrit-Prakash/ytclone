@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Speech to Text and YouTube Search</title>
+</head>
+<body>
+    <h1>Speech to Text and YouTube Search</h1>
+    <button onclick="startListening()">Start Listening</button>
+    <p id="transcript">Transcript will appear here...</p>
+    <div id="searchResults"></div>
+
+    <script>
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+
+        recognition.onresult = async function(event) {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('transcript').innerText = transcript;
+            const response = await fetch('/api/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ query: transcript })
+            });
+            const data = await response.json();
+            displayResults(data.results);
+        };
+
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error', event.error);
+        };
+
+        function startListening() {
+            recognition.start();
+            console.log('Listening...');
+        }
+
+        function displayResults(results) {
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.innerHTML = '';
+            results.forEach(video => {
+                const videoElement = document.createElement('div');
+                videoElement.innerHTML = `<a href="${video.url}" target="_blank">${video.title}</a>`;
+                resultsDiv.appendChild(videoElement);
+            });
+        }
+    </script>
+</body>
+</html>
