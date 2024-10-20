@@ -18,10 +18,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install backend dependency
-        run: |
-          cd backend
-          npm install
+      # - name: Install backend dependency
+      #   run: |
+      #     cd backend
+      #     npm install
 
       - name: Install frontend dependency
         run: |
